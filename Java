@@ -1,0 +1,90 @@
+let clickCount = 0;
+let currentTab = 1;
+
+const messages = {
+    1: ['Philippe', 'Phiphi', 'Philou'],
+    2: ['Didier', 'Didou', 'Gras du bide'],
+    3: ['Mika', 'Mikalotte', 'Mikartouche', 'Mikaleçon']
+};
+
+const images = {
+    1: 'https://image-uviadeo.journaldunet.com/image/450/1438632026/1607597.jpg',
+    2: 'https://media.licdn.com/dms/image/C4E03AQFYHE0EE0EsRQ/profile-displayphoto-shrink_200_200/0/1582089711281?e=2147483647&v=beta&t=BRbCL5w7InsDdGt6mmrB4Zkwm9-AukqllzDvcqmO70A',
+    3: 'https://media.licdn.com/dms/image/C5603AQGe_sSbT_y2cw/profile-displayphoto-shrink_800_800/0/1554820954522?e=2147483647&v=beta&t=YZs3fEJsoKpe17CIsl1hDrUvVRR3QNVOUzxBHPCbuNM'
+};
+
+const voices = {
+    male: {
+        normal: "Google US English",
+        angry: "Google UK English Male",
+        charming: "Google Australian English Male"
+    },
+    female: {
+        normal: "Google UK English Female",
+        angry: "Google UK English Female",
+        charming: "Google Australian English Female"
+    }
+};
+
+function speak() {
+    clickCount++;
+    let messageList = messages[currentTab];
+    let messageIndex = clickCount % messageList.length;
+    let message = messageList[messageIndex];
+
+    let voiceType = document.getElementById('voiceSelect').value;
+    let tone = document.getElementById('toneSelect').value;
+
+    const msg = new SpeechSynthesisUtterance(message);
+    let selectedVoice = voices[voiceType][tone];
+
+    speechSynthesis.getVoices().forEach(voice => {
+        if (voice.name === selectedVoice) {
+            msg.voice = voice;
+        }
+    });
+
+    msg.onend = function(event) {
+        playRandomSound();
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+function playRandomSound() {
+    const sounds = [
+        document.getElementById('fartSound1'),
+        document.getElementById('fartSound2'),
+        document.getElementById('fartSound3'),
+        document.getElementById('meowSound1'),
+        document.getElementById('meowSound2'),
+        document.getElementById('wolfHowlSound'),
+        document.getElementById('poodleBarkSound')
+    ];
+    const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+    randomSound.play();
+}
+
+document.getElementById('speakButton').addEventListener('click', speak);
+
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space') {
+        speak();
+    }
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        currentTab = parseInt(this.getAttribute('data-tab'));
+        clickCount = 0; // Reset click count when changing tab
+        document.querySelector('h1').textContent = `Cliquer pour entendre ${this.textContent}`;
+        document.getElementById('speakButton').src = images[currentTab];
+    });
+});
+
+// Ensure voices are loaded
+window.speechSynthesis.onvoiceschanged = function() {
+    const voices = window.speechSynthesis.getVoices();
+    console.log(voices);
+};
